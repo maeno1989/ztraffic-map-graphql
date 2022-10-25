@@ -1,7 +1,9 @@
 var height = $(window).offsetHeight,
     width = $(window).offsetWidth,
-    // json = 'https://clients.connect.etherfax.net/Data/WarMapData',
-	json = 'data/PewPewDataState7.txt',
+    //json = 'https://clients.connect.etherfax.net/Data/WarMapData',
+	//ERS220325 json = 'data/PewPewDataState7.txt',
+	json0 = 'trafficFiles/2018.js',
+	json = '/red/traffic/js/data.js',
     focus = true,
     plural = true,
     jsonData = [],
@@ -380,7 +382,8 @@ function buildMap() {
     datamap = new Datamap({
         element: document.getElementById('action-map'),
         responsive: true,
-        scope: 'world',
+        scopeERS220325: 'world',
+        scope: 'usa',
         fills: {
             'Fax': fax_color,
             'SEN': sen_color,
@@ -388,7 +391,7 @@ function buildMap() {
             'SEN (Document)': sen_doc_color,
             defaultFill: '#090b0c'
         },
-        setProjection: function (element) {
+        setProjection0: function (element) { //ERS220325
             var projection = d3.geo.mercator()
                 .scale($(document).width() / 2 / Math.PI)
                 .rotate([10, 0])
@@ -403,6 +406,7 @@ function buildMap() {
         geographyConfig: {
             dataUrl: null,
             hideAntarctica: true,
+            hideAlaska: true,
             borderWidth: 0.75,
             borderColor: '#003449',
             popupTemplate: function (geography) {
@@ -526,9 +530,17 @@ function drawGrid(gridSize, gridThickness, color){
 }
 /* End custom background grid */
 
+var maxTimes=10;
+var reloads=0;
 function requestData() {
     // request data
-    console.log('Request new data');
+    console.log('Request new data '+reloads);
+    reloads++;
+    if (reloads > maxTimes) {
+        alert("No new data available!");
+        setInterval(checkPageFocus, 0);
+        return;
+    }
     $ajax = $.ajax({
         type: 'GET',
         url: json,
@@ -589,7 +601,13 @@ function updateLocations(top_location, pages, dst_country, dst_state, page_count
 
     // if the location exists in array update the count
     if (current_location) {
-        update_count = parseInt( parseInt(pages) + parseInt(top_location[index].count) );
+        try {
+            update_count = parseInt( parseInt(pages) + parseInt(top_location[index].count) );
+        }
+        catch {
+            console.log("Real data issues index="+index);
+        }
+        
         //update_percent = parseInt( (parseInt(update_count) / parseInt(page_count) ) * 100).toFixed(1)
         //console.log("hit")
         // current_location.getElementsByClassName('count').innerHTML = update_count.toLocaleString();
@@ -653,3 +671,4 @@ $(window).on('load', function () {
     // check for page focus
     setInterval(checkPageFocus, 1000)
 });
+console.log('-_-');
